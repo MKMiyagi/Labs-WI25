@@ -63,7 +63,26 @@ class TrivialVacuumEnvironment:
         """
         assert action in self.action_space, "Invalid Action"
 
-        ...
+        if action == 'Right':
+            if agent.location == loc_A:
+                agent.location = loc_B
+            else:
+                agent.location = loc_A
+            agent.performance -= 1
+        elif action == 'Left':
+            if agent.location == loc_B:
+                agent.location = loc_A
+            else:
+                agent.location = loc_B
+            agent.performance =- 1
+        elif action == 'Suck':
+            if self.status[agent.location] == 'Dirty':
+                self.status[agent.location] = 'Clean'
+                agent.performance += 7
+            else:
+                agent.performance -= 3
+        elif action == 'Stay':
+            pass
 
     def random_agent(self, agent: Agent) -> str:
         """
@@ -81,7 +100,7 @@ class TrivialVacuumEnvironment:
         >>> action = env.random_agent(agent)
         >>> assert action in env.action_space
         """
-        ...
+        return random.choice(self.action_space)
 
     def reflex_agent(self, agent: Agent) -> str:
         """
@@ -112,7 +131,14 @@ class TrivialVacuumEnvironment:
         >>> env.execute_action(agent, action)
         >>> assert agent.location == loc_A
         """
-        ...
+        if self.status[agent.location] == 'Dirty':
+            return 'Suck'
+        elif agent.location == loc_A:
+            return 'Right'
+        else:
+            return 'Left'
+
+
 
     def model_based_agent(self, agent: AgentMemory) -> str:
         """
@@ -148,4 +174,17 @@ class TrivialVacuumEnvironment:
         >>> action = env.model_based_agent(agent)
         >>> assert action == 'Stay', f"agent should stay at B since both locations are clean, however your action is {action}"
         """
-        ...
+        
+        current_status = self.status[agent.location]
+        agent.visited[agent.location] = current_status
+        
+        if current_status == 'Dirty':
+            return 'Suck'
+        elif current_status == 'Clean':
+            if agent.location == loc_A:
+                return 'Right'
+            else:
+                return 'Left'
+        if loc_A in agent.visited and loc_B in agent.visited and agent.visited[loc_A] == 'Clean' and agent.visited[loc_B] == 'Clean':
+            return 'Stay'
+
