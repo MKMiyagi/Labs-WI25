@@ -74,7 +74,7 @@ class TrivialVacuumEnvironment:
                 agent.location = loc_A
             else:
                 agent.location = loc_B
-            agent.performance =- 1
+            agent.performance -= 1
         elif action == 'Suck':
             if self.status[agent.location] == 'Dirty':
                 self.status[agent.location] = 'Clean'
@@ -177,14 +177,14 @@ class TrivialVacuumEnvironment:
         
         current_status = self.status[agent.location]
         agent.visited[agent.location] = current_status
-        
+
+        if loc_A in agent.visited and loc_B in agent.visited:
+            if agent.visited[loc_A] == 'Clean' and agent.visited[loc_B] == 'Clean':
+                return 'Stay'
         if current_status == 'Dirty':
             return 'Suck'
-        elif current_status == 'Clean':
-            if agent.location == loc_A:
-                return 'Right'
-            else:
-                return 'Left'
-        if loc_A in agent.visited and loc_B in agent.visited and agent.visited[loc_A] == 'Clean' and agent.visited[loc_B] == 'Clean':
-            return 'Stay'
+        if agent.location == loc_A:
+            return 'Right'
+        else:
+            return 'Left'
 
