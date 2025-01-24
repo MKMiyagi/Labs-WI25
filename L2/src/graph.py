@@ -22,8 +22,11 @@ class Node:
         Args:
             end (Node): the end node
         """
-        # TODO your code here
-        ...
+        if end not in self.children:
+            self.children.append(end)
+        
+        if self not in end.parents:
+            end.parents.append(self)
 
     def add_undirected_edge(self, end: "Node"):
         """
@@ -34,8 +37,17 @@ class Node:
         Args:
             end (Node): the end node
         """
-        # TODO your code here
-        ...
+        if end not in self.children:
+            self.children.append(end)
+
+        if self not in end.parents:
+            end.parents.append(self)
+
+        if self not in end.children:
+            end.children.append(self)
+
+        if end not in self.parents:
+            self.parents.append(end)
 
     def __repr__(self):
         """String representation of the node"""
@@ -64,7 +76,7 @@ class Graph:
             self.root = root
         else:
             self.root = None
-
+    
     def add_node(self, node: Node):
         """
         Add a node to the graph
@@ -84,8 +96,17 @@ class Graph:
             end (Node): the end node
             directed (bool): whether the edge is directed or not, default is True
         """
-        # TODO your code here
-        ...
+
+        if start not in self.nodes:
+            self.add_node(start)
+        if end not in self.nodes:
+            self.add_node(end)
+
+        
+        if directed:
+            start.add_directed_edge(end)
+        else:
+            start.add_undirected_edge(end)
 
 
 class Tree(Graph):
@@ -101,6 +122,14 @@ class Tree(Graph):
         """
         super().__init__(root)
         self.root = root
+    
+    def bfs(self):
+        from src.search import bfs
+        return bfs(self)
+
+    def dfs(self):
+        from src.search import dfs
+        return dfs(self)
 
     def validate_tree(self) -> bool:
         """
@@ -110,8 +139,26 @@ class Tree(Graph):
 
         Returns: (bool) whether the tree is valid or not
         """
-        # TODO your code here
-        ...
+        root_count = 0
+
+        for node in self.nodes:
+            if not node.parents:
+                root_count += 1
+        
+        if root_count != 1:
+            return False
+        
+        visited_dfs, found_dfs = self.dfs()
+
+        if len(visited_dfs) != len(self.nodes):
+            return False
+
+        visited_bfs, found_bfs = self.bfs()
+
+        if len(visited_bfs) != len(self.nodes):
+            return False
+
+        return True
 
 
 class BinaryTreeNode(Node):
@@ -153,8 +200,30 @@ class BinarySearchTree(Tree):
             self.nodes.add(node)
             return
         current = self.root
-        # TODO your code here
-        ...
+
+
+        while True:
+            if node.value < current.value:
+                if current.left is None:
+                    current.left = node
+                    current.children.append(node)
+                    node.parents.append(current)
+                    self.nodes.add(node)
+                    return
+                current = current.left
+            elif node.value > current.value:
+                if current.right is None:
+                    current.right = node
+                    current.children.append(node)
+                    node.parents.append(current)
+                    self.nodes.add(node)
+                    return
+                current = current.right
+            else:
+                return
+                    
+    
+
 
     def validate_bst(self) -> bool:
         """
@@ -167,5 +236,26 @@ class BinarySearchTree(Tree):
             - The left child of a node must be less than the parent node
             - The right child of a node must be greater than the parent node
         """
-        # TODO your code here
-        ...
+        
+        if not super().validate_tree():
+            return False
+
+        stack = [(self.root, float('-inf'), float('inf'))]
+
+        while stack:
+            node, min_v, max_v = stack.pop(0)
+
+            if not (min_v < node.value < max_v):
+                return False
+            
+            if node.right:
+                if node.right.value <= node.value:
+                    return False
+                stack.append((node.right, node.value, max_v))
+
+            if node.left:
+                if node.left.value >= node.value:
+                    return False
+                stack.append((node.left, min_v, node.value))
+            
+        return True
